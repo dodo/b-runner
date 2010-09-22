@@ -16,25 +16,25 @@ var player;
 var map;
 
 window.onload = function() {
-	canvas = document.getElementById("canvas");
-	ctx = canvas.getContext('2d');
+    canvas = document.getElementById("canvas");
+    ctx = canvas.getContext('2d');
 
-	player = new Player();
-	map = new Map();
+    player = new Player();
+    map = new Map();
 
-	setInterval(loop, 20);	// 50 fps
+    setInterval(update_loop, 16);  // 60 fps
+    setInterval(  draw_loop, 33);  // 30 fps
 };
 
+var update_loop = function() {
+    player.update();
+    map.collision(player);
+};
 
-var loop = function() {
-
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-	map.draw();
-	player.update();
-	map.collision(player);
-
-	player.draw();
+var draw_loop = function() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    map.draw();
+    player.draw();
 
 };
 
