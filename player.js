@@ -23,15 +23,10 @@ Player.prototype.draw = function() {
 };
 
 Player.prototype.update = function() {
-
-	this.v.x += (keys[39] - keys[37]) * 0.5;
-	this.v.y += (keys[40] - keys[38]) * 0.5 + 0.17;
-	this.v.x *= 0.98;
-	this.v.y *= 0.98;
-
-	this.p.x += this.v.x;
-	this.p.y += this.v.y;
-
+    this.v.add({x:(keys[39] - keys[37]) * 0.5,
+                y:(keys[40] - keys[38]) * 0.5 + 0.17})
+          .mul(0.98);
+    this.p.add(this.v);
 };
 
 

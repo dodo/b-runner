@@ -34,39 +34,34 @@ var tiles = [undefined,
 
 
 var polygonCollision = function(poly, m) {
-	var col = { d: 9e9 };
-	var len = poly.length;
-	var a = poly[len - 1];
-	var b;
-	var i;
-	for(i = 0; i < len; ++i) {
-		b = poly[i];
-		var ab = b.sub(a);
-		var am = m.sub(a);
-		var p = null;
-		var d;
-		var n;
-		var q = ab.dot(am) / ab.lenSq();
-		if(q < 0) p = a;
-		else if(q > 1) p = b;
-		if(p) { // vertex
-			n = m.sub(p);
-			d = n.len();
-			n.normalize();
-		}
-		else { // line
-			p = a.add(ab.mul(q));
-			n = ab.perp().normalize();
-			d = n.dot(am);
-		}
-		if(Math.abs(d) < Math.abs(col.d)) {
-			col.d = d;
-			col.n = n;
-			col.p = p;
-		}
-		a = b;
-	}
-	return col;
+    var col = { d: 9e9 };
+    var b, a = poly.slice(-1)[0];
+    for(var i=0, l=poly.length; i < l && (b=poly[i]) ; ++i) {
+        var ab = b.dup().sub(a);
+        var am = m.dup().sub(a);
+        var p = null;
+        var d;
+        var n;
+        var q = ab.dot(am) / ab.lenSq();
+        if(q < 0) p = a;
+        else if(q > 1) p = b;
+        if(p) { // vertex
+            n = m.dup().sub(p);
+            d = n.len();
+            n.norm();
+        } else { // line
+            p = a.dup().add(ab.dup().mul(q));
+            n = ab.dup().perp().norm();
+            d = n.dot(am);
+        }
+        if(Math.abs(d) < Math.abs(col.d)) {
+            col.d = d;
+            col.n = n;
+            col.p = p;
+        }
+        a = b;
+    }
+    return col;
 };
 
 
@@ -106,7 +101,7 @@ Map.prototype.collision = function(player) {
 			if(!poly) continue;
 
 			var q = vec(x * TILE_SIZE, y * TILE_SIZE);
-			var w = m.sub(q);
+			var w = m.dup().sub(q);
 
 			var c = polygonCollision(poly, w);
 			if(c.d < col.d) col = c;
@@ -117,9 +112,9 @@ Map.prototype.collision = function(player) {
 	if(col.d <= player.radius) { 	// apply corrections
 
 		col.d -= player.radius;
-		var k = col.n.mul(col.d);
-		player.p = player.p.sub(k);
-		var pn = col.n.perp();
+		var k = col.n.dup().mul(col.d);
+		player.p.sub(k);
+		var pn = col.n.dup().perp();
 		player.v = pn.mul(player.v.dot(pn));
 
 		player.inAir = false;
