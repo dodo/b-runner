@@ -4,6 +4,7 @@ include("vec.js");
 include("player.js");
 include("map.js");
 
+//           ←     ↑     →     ↓     x     c
 var keys = { 37:0, 38:0, 39:0, 40:0, 88:0, 89:0 };
 window.onkeydown = function (e) { keys[e.which] = 1; };
 window.onkeyup = function (e) { keys[e.which] = 0; };
@@ -34,7 +35,7 @@ var update_loop = function() {
 var draw_loop = function() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     map.draw();
-    player.draw();
+    player.draw(0.2);
 
 };
 

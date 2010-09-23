@@ -9,6 +9,7 @@
     }
 
     this.vec_ = function (d, o) {
+        o = o || {};
         switch(d) {
             case 2: return (new V(['x', 'y'], o))._setup();      break;
             case 3: return  new V(['t', 'x', 'y'], o);           break;
@@ -18,9 +19,15 @@
 
     var V = function (g, o) {
         this.keys = g;
+        this.set(o);
+    };
+
+    // sets values
+    V.prototype.set = function (o) {
         for(var k, s=this.keys, i=0, l=s.length ; i<l && (k=s[i]) ; ++i )
             this[k] = o[k] || 0;
-    };
+        return this;
+    }
 
     // duplicate
     V.prototype.dup = function () {
@@ -29,10 +36,10 @@
 
     // equals
     V.prototype.equ = function (o) {
-        var b = this.keys == o.keys;
+        var b = this.keys.length == o.keys.length;
         if (!b) return false;
         for(var k, s=this.keys, i=0, l=s.length ; i<l && (k=s[i]) ; ++i ) {
-            b = this[k] == o[k];
+            b = (this[k] == o[k]);
             if (!b) break;
         }
         return b;
@@ -98,7 +105,9 @@
 
     // normalize
     V.prototype.norm = function () {
-        var d = 1 / this.len();
+        var d = this.len();
+        if(!d) return this;
+        d = 1 / d;
         for(var k, s=this.keys, i=0, l=s.length ; i<l && (k=s[i]) ; ++i )
             this[k] *= d;
         return this;

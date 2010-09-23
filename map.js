@@ -131,6 +131,7 @@ Map.prototype.collision = function(player) {
 Map.prototype.draw = function() {
 
 	ctx.fillStyle = "#777";
+    ctx.strokeStyle = "rgba(0,0,0,0.3)";
 
 	for(var y = 0, ly = this.data.length; y < ly; ++y) {
 		for(var x = 0, lx = this.data[y].length; x < lx; ++x) {
@@ -146,6 +147,7 @@ Map.prototype.draw = function() {
 				ctx.lineTo(v.x + x * TILE_SIZE, v.y + y * TILE_SIZE);
 			}
 			ctx.fill();
+            ctx.stroke();
 
 		}
 	}
