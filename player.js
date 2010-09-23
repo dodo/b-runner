@@ -157,7 +157,9 @@ Movement.prototype.createTileIterator = function () {
         y: Math.floor(this.p.y / TILE_SIZE),
         p: vec3.apply(null, [0].concat(this.p.toList()))
     };
+    var m = that.m.dup().sub(vec3.apply(null, [0].concat(that.p.toList())));
     iter.next = function () {
+        /* // maybe dead end
         var t = that._calc_boundary_t(
             { // min
                 t: iter.p.t,
@@ -178,6 +180,16 @@ Movement.prototype.createTileIterator = function () {
         iter.y = Math.floor(iter.p.y / TILE_SIZE);
         iter.p.t = t;
         return true;
+        */
+        var d = that.v.dup().norm().mul(TILE_SIZE).add(iter.p).sub(that.p);
+        var perc = Math.sqrt(d.lenSq() / m.lenSq());
+        var t = m.dup().mul(perc).t;
+        if (t > that.m.t) return false;
+        iter.p = vec3.apply(null, [t].concat(that._calc_p(t).toList()));
+        iter.x = Math.floor(iter.p.x / TILE_SIZE);
+        iter.y = Math.floor(iter.p.y / TILE_SIZE);
+        return true;
+
     };
     return iter;
 };
