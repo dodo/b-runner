@@ -30,12 +30,14 @@ Player.prototype.draw = function (dt) {
 
     var iter = this.move.createTileIterator();//console.log("------------------------")
     ctx.beginPath();
-    for(var i = 0 ; i < 10 ; ++i) {
+    for(var i = 0 ; i < 20 ; ++i) {
         ctx.moveTo(iter.x*TILE_SIZE, iter.y*TILE_SIZE);
         ctx.lineTo((iter.x+1)*TILE_SIZE, iter.y*TILE_SIZE);
         ctx.lineTo((iter.x+1)*TILE_SIZE, (iter.y+1)*TILE_SIZE);
         ctx.lineTo(iter.x*TILE_SIZE, (iter.y+1)*TILE_SIZE);
         ctx.lineTo(iter.x*TILE_SIZE, iter.y*TILE_SIZE);
+        ctx.moveTo(this.p.x, this.p.y);
+        ctx.lineTo(iter.p.x, iter.p.y);
         iter.next()//if (!iter.next()) break;
     }
     ctx.stroke();
@@ -152,9 +154,10 @@ Movement.prototype.getPoint = function (perc) {
 
 Movement.prototype.createTileIterator = function () {
     var that = this;
+    var _TS = 1 / TILE_SIZE;
     var iter = {
-        x: Math.floor(this.p.x / TILE_SIZE),
-        y: Math.floor(this.p.y / TILE_SIZE),
+        x: Math.floor(this.p.x * _TS),
+        y: Math.floor(this.p.y * _TS),
         p: vec3.apply(null, [0].concat(this.p.toList()))
     };
     var m = that.m.dup().sub(vec3.apply(null, [0].concat(that.p.toList())));
@@ -181,13 +184,18 @@ Movement.prototype.createTileIterator = function () {
         iter.p.t = t;
         return true;
         */
-        var d = that.v.dup().norm().mul(TILE_SIZE).add(iter.p).sub(that.p);
-        var perc = Math.sqrt(d.lenSq() / m.lenSq());
-        var t = m.dup().mul(perc).t;
-        if (t > that.m.t) return false;
-        iter.p = vec3.apply(null, [t].concat(that._calc_p(t).toList()));
-        iter.x = Math.floor(iter.p.x / TILE_SIZE);
-        iter.y = Math.floor(iter.p.y / TILE_SIZE);
+        var x = iter.x;
+        var y = iter.y;
+        var d, perc, t, i = 1;
+        while(x == iter.x && y == iter.y) {
+            d = that.v.dup().norm().mul(TILE_SIZE*0.1).add(iter.p).sub(that.p).add(that.a.dup().mul(iter.p.t));
+            perc = Math.sqrt(d.lenSq() / m.lenSq());
+            t = m.dup().mul(perc).t;
+            iter.p = vec3.apply(null, [t].concat(that._calc_p(t).toList()));
+            iter.x = Math.floor(iter.p.x * _TS);
+            iter.y = Math.floor(iter.p.y * _TS);
+            if(++i == 20) break;
+        }
         return true;
 
     };
