@@ -28,6 +28,19 @@ Player.prototype.draw = function (dt) {
     }
     ctx.stroke();
 
+    var iter = this.move.createTileIterator();//console.log("------------------------")
+    ctx.beginPath();
+    for(var i = 0 ; i < 10 ; ++i) {
+        ctx.moveTo(iter.x*TILE_SIZE, iter.y*TILE_SIZE);
+        ctx.lineTo((iter.x+1)*TILE_SIZE, iter.y*TILE_SIZE);
+        ctx.lineTo((iter.x+1)*TILE_SIZE, (iter.y+1)*TILE_SIZE);
+        ctx.lineTo(iter.x*TILE_SIZE, (iter.y+1)*TILE_SIZE);
+        ctx.lineTo(iter.x*TILE_SIZE, iter.y*TILE_SIZE);
+        iter.next()//if (!iter.next()) break;
+    }
+    ctx.stroke();
+
+
     ctx.strokeStyle = "white";
 };
 
@@ -57,6 +70,7 @@ Player.prototype.update = function () {
 var Movement = function (p, v) {
     this.p = vec_(2,p);
     this.v = vec_(2,v).mul(0.98);
+    this.a = vec2(0,0.17);
     this.m = vec3();
     this.t = 0;
     this._p = this.p.dup();
@@ -65,10 +79,15 @@ var Movement = function (p, v) {
 
 Movement.prototype.calculate = function () {
     // TODO collision check
-    var t = 50; // hrhr FIXME
-    var v = this.v.dup().mul(t);
-    v.y += 0.17*t*t;
-    v.add(this.p);
+    var t = this._calc_boundary_t(
+            { // min
+                t: 0, x: 0, y: 0
+            }, { // max
+                t: 100,
+                x: canvas.width,
+                y: canvas.height
+            }, this.p, this.a, this.v);
+    var v = this._calc_p(t);
     this.m = vec3.apply(null, [t].concat(v.toList()));
     return this;
 };
@@ -81,12 +100,85 @@ Movement.prototype.update = function (dt) {
     } else return this.getPoint();*/
 };
 
+Movement.prototype._calc_p = function (t) {
+    return this.v.dup().mul(t).add(this.a.dup().mul(0.5*t*t)).add(this.p);
+};
+
+Movement.prototype._calc_t = function (min_t, c, p, a, v) {
+    var t = NaN;
+    if (a === 0) {
+        if (v !== 0) {
+            t = p / v;
+            if (t < min_t) t = NaN;
+        }
+    } else {
+        var t1 =   ( Math.sqrt( 2 * a * ( c - p ) + v * v ) - v ) / a;
+        var t2 = - ( Math.sqrt( 2 * a * ( c - p ) + v * v ) + v ) / a;
+        if (!isNaN(t1) && !isNaN(t2)) {
+                 if( t1 >= 0 && t2 < 0 && t1 >= min_t) t = t1;
+            else if (t2 >= 0 && t1 < 0 && t2 >= min_t) t = t2;
+            else {
+                if (t1 >= min_t && t2 >= min_t)
+                    t = Math.min(t1,t2);
+                else if (t1 >= min_t) t = t1;
+                else if (t2 >= min_t) t = t2;
+            }
+        } else if (isNaN(t2) && t1 >= min_t) t = t1;
+          else if (isNaN(t1) && t2 >= min_t) t = t2;
+    }
+    //console.log("t",min_t,"|",t,t1,t2)
+    return Math.abs(t);
+};
+
+Movement.prototype._calc_boundary_t = function (min, max, p, a, v) {
+    var _t, t = max.t;
+    var _t = this._calc_t(min.t, min.x, p.x, a.x, v.x);
+    if (!isNaN(_t)) t = Math.min(t, _t);
+    var _t = this._calc_t(min.t, min.y, p.y, a.y, v.y);
+    if (!isNaN(_t)) t = Math.min(t, _t);
+    var _t = this._calc_t(min.t, max.x, p.x, a.x, v.x);
+    if (!isNaN(_t)) t = Math.min(t, _t);
+    var _t = this._calc_t(min.t, max.y, p.y, a.y, v.y);
+    if (!isNaN(_t)) t = Math.min(t, _t);
+    return t;
+};
+
 Movement.prototype.getPoint = function (perc) {
     if (!perc && perc !== 0)
         return this._p;
     var t = this.m.t*perc;
-    var v = this.v.dup().mul(t);
-    v.y += 0.17*0.5*t*t;
-    return this._p.set(this.p).add(v);
+    return this._p.set(this._calc_p(t));
+};
+
+Movement.prototype.createTileIterator = function () {
+    var that = this;
+    var iter = {
+        x: Math.floor(this.p.x / TILE_SIZE),
+        y: Math.floor(this.p.y / TILE_SIZE),
+        p: vec3.apply(null, [0].concat(this.p.toList()))
+    };
+    iter.next = function () {
+        var t = that._calc_boundary_t(
+            { // min
+                t: iter.p.t,
+                x: iter.x * TILE_SIZE - 0.001,
+                y: iter.y * TILE_SIZE - 0.001
+            }, { // max
+                t: 9e9,
+                x: (iter.x + 1) * TILE_SIZE + 0.001,
+                y: (iter.y + 1) * TILE_SIZE + 0.001
+            }, iter.p, that.a, that.v);
+
+        var p = vec3.apply(null, [t].concat(that._calc_p(t).toList()));
+        //console.log(p.toString())
+        if (t > that.m.t) return false;
+
+        iter.p = p;//iter.p = vec_(3, that.getPoint(t / that.m.t));
+        iter.x = Math.floor(iter.p.x / TILE_SIZE);
+        iter.y = Math.floor(iter.p.y / TILE_SIZE);
+        iter.p.t = t;
+        return true;
+    };
+    return iter;
 };
 
