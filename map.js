@@ -1,5 +1,5 @@
 
-var TILE_SIZE = 20;
+var TILE_SIZE = T = 20;
 
 var Map = function() {
 
@@ -23,13 +23,13 @@ var Map = function() {
 };
 
 var tiles = [undefined,
-	[vec(0, 0), vec(TILE_SIZE, 0), vec(TILE_SIZE, TILE_SIZE), vec(0, TILE_SIZE)],
-	[vec(0, 0), vec(TILE_SIZE, TILE_SIZE), vec(0, TILE_SIZE)],
-	[vec(TILE_SIZE, 0), vec(TILE_SIZE, TILE_SIZE), vec(0, TILE_SIZE)],
-	[vec(0, 0), vec(TILE_SIZE, 0), vec(0, TILE_SIZE)],
-	[vec(0, 0), vec(TILE_SIZE, 0), vec(TILE_SIZE, TILE_SIZE)],
-	[vec(0, 0), vec(TILE_SIZE, 0), vec(TILE_SIZE, TILE_SIZE/2), vec(0, TILE_SIZE/2)],
-	[vec(0, TILE_SIZE/2), vec(TILE_SIZE, TILE_SIZE/2), vec(TILE_SIZE, TILE_SIZE), vec(0, TILE_SIZE)],
+	[vec(0, 0), vec(T, 0), vec(T, T), vec(0, T)],
+	[vec(0, 0), vec(T, T), vec(0, T)],
+	[vec(T, 0), vec(T, T), vec(0, T)],
+	[vec(0, 0), vec(T, 0), vec(0, T)],
+	[vec(0, 0), vec(T, 0), vec(T, T)],
+	[vec(0, 0), vec(T, 0), vec(T, T/2), vec(0, T/2)],
+	[vec(0, T/2), vec(T, T/2), vec(T, T), vec(0, T)],
 ];
 
 
