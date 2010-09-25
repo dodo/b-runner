@@ -34,7 +34,6 @@ var wait = function() {
 
 	// wait for sprites to be loaded
 	if(Sprite.prototype.imagesToLoad > 0) {
-		console.log(Sprite.prototype.imagesToLoad);
 		setTimeout(wait, 20);
 	}
 	else {

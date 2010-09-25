@@ -28,34 +28,30 @@ var Sprite = function(src, width, animations) {
 		that.constructor.prototype.imagesToLoad--;
 	}
 
+	// defaults for animation
 	this.curFrame = 0;
 	this.curAnim = null;
-
-	this.setAnim = function(a) {
-		if(this.curAnim == this.anims[a]) return;
-		this.curAnim = this.anims[a];
-		this.curFrame = 0;
-	};
-	this.nextFrame = function() {
-		this.curFrame = (this.curFrame + 1) % this.curAnim.length;
-	}
-
-
-	this.anims = {
-		"idle" : [ 0 ],
-		"crouch" : [ 1 ],
-		"jump" : [ 2 ],
-		"run" : [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
-	};
+	this.anims = animations || { "idle" : [0] };
 	this.setAnim("idle");
-
 };
 
 Sprite.prototype.imagesToLoad = 0;
 
-Sprite.prototype.draw = function(flipped) {
+Sprite.prototype.setAnim = function(a) {
+	if(this.curAnim == this.anims[a]) return;
+	this.curAnim = this.anims[a];
+	this.curFrame = 0;
+};
+
+Sprite.prototype.setFlip = function(b) { this.flip = b; };
+
+Sprite.prototype.nextFrame = function() {
+	this.curFrame = (this.curFrame + 1) % this.curAnim.length;
+}
+
+Sprite.prototype.draw = function(flip) {
 	var x = this.curAnim[this.curFrame] * this.frameWidth;
-	var y = flipped ? this.frameHeight : 0;
+	var y = flip ? this.frameHeight : 0;
 	ctx.drawImage(this.canvas, x, y, this.frameWidth, this.frameHeight, -this.frameWidth/2, -this.frameHeight/2, this.frameWidth, this.frameHeight);
 };
 

@@ -14,9 +14,14 @@ var Player = function() {
 	this.jumpState = 0;
 	this.lastJump = 0;
 
-};
+	this.sprite = new Sprite("sprite.png", 32, {
+		"idle" : [ 0 ],
+		"crouch" : [ 1 ],
+		"jump" : [ 2 ],
+		"run" : [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ]
+	});
 
-Player.prototype.sprite = new Sprite("sprite.png", 32);
+};
 
 var GRAVITY = 0.4;
 var MAX_SPEED = 10;
@@ -59,8 +64,6 @@ Player.prototype.applyFriction = function() {
 
 Player.prototype.update = function() {
 
-//	console.log(this.normal.y + " " + this.collision);
-
 	var t = keys[39] - keys[37];
 	var perp = this.normal.perp();
 
@@ -73,7 +76,7 @@ Player.prototype.update = function() {
 
 		// initialize jump
 		if(keys[88] && !this.lastJump) {
-			this.jumpState = 17;
+			this.jumpState = 15;
 			this.vel.subEq(this.normal.mul(GRAVITY * -12));
 
 			h = this.pos.y;
@@ -103,6 +106,7 @@ Player.prototype.update = function() {
 	}
 	this.lastJump = keys[88];
 
+
 	// gravity
 	this.vel.y += GRAVITY;
 
@@ -115,13 +119,9 @@ Player.prototype.update = function() {
 	// apply velocity
 	this.pos.addEq(this.vel);
 
-	// sptite direction
+	// sprite direction
 	if(this.vel.x > 0.000001) this.dir = 1;
 	else if(this.vel.x < -0.000001) this.dir = -1;
-
-	// sprite animation
-
-
 };
 
 
@@ -146,7 +146,6 @@ Player.prototype.draw = function() {
 	ctx.translate(this.pos.x, this.pos.y);
 	this.sprite.draw(this.dir < 0);
 	ctx.restore();
-
 
 };
 
