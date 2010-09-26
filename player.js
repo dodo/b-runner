@@ -25,8 +25,8 @@ var Player = function() {
 
 var GRAVITY = 0.4;
 var MAX_SPEED = 10;
-var MAX_X_SPEED = 5;
-var FRICTION_GROUND = 0.3;
+var MAX_X_SPEED = 4;
+var FRICTION_GROUND = 0.5;
 var FRICTION_AIR = 0.1;
 
 
