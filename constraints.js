@@ -74,6 +74,7 @@ var Segment = function (points) {
 };
 
 Segment.prototype.draw = function () {
+    /* debug
     ctx.strokeStyle = "blue";
     for(var i=0; i<4; i++) {
         var p1 = this.points[i];
@@ -82,7 +83,17 @@ Segment.prototype.draw = function () {
         ctx.moveTo(p1.pos.x, p1.pos.y);
         ctx.lineTo(p2.pos.x, p2.pos.y);
         ctx.stroke();
+    } */
+    ctx.fillStyle = "#777";
+    ctx.strokeStyle = "#777";
+    ctx.beginPath();
+    ctx.moveTo(this.points[3].pos.x, this.points[3].pos.y);
+    for(var i=0; i<4; i++) {
+        var p = this.points[i];
+        ctx.lineTo(p.pos.x, p.pos.y);
     }
+    ctx.fill();
+    ctx.stroke();
 };
 
 Segment.prototype.collisionCheck = function (player) {
@@ -144,8 +155,8 @@ Block.prototype.connect = function (p1, p2, p3, p4) {
 };
 
 Block.prototype.draw = function () {
-    for(var i=0, il=this.constraints.length; i<il; i++) this.constraints[i].draw();
-    //for(var i=0, il=this.segments.length; i<il; i++) this.segments[i].draw(); // debug
+    for(var i=0, il=this.segments.length; i<il; i++) this.segments[i].draw();
+    //for(var i=0, il=this.constraints.length; i<il; i++) this.constraints[i].draw(); // debug
     //ctx.strokeStyle = "green";ctx.strokeRect(this.bb.min.x, this.bb.min.y, this.bb.max.x-this.bb.min.x, this.bb.max.y-this.bb.min.y); // debug
 };
 
