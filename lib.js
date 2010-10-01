@@ -3,6 +3,7 @@ var include = function(file) { document.write('<script type="text/javascript" sr
 include("vec.js");
 include("sprite.js");
 include("player.js");
+include("constraints.js");
 include("map.js");
 
 var keys = { 37:0, 38:0, 39:0, 40:0, 88:0, 89:0 };
@@ -17,6 +18,7 @@ var ctx;
 var player;
 var camera;
 var map;
+var solver;
 
 window.onload = function() {
 	canvas = document.getElementById("canvas");
@@ -26,6 +28,7 @@ window.onload = function() {
 	player = new Player();
 	camera = player.pos.dup();
 	map = new Map();
+    solver = buildConstraints();
 	wait();
 };
 
@@ -64,7 +67,8 @@ var loop = function() {
 
 	// update game state
 	player.update();
-	map.collision(player);
+    solver.update();
+	map.collision(player, solver);
 	updateCamera();
 
 
@@ -73,6 +77,7 @@ var loop = function() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.translate(-camera.x + canvas.width/2, -camera.y + canvas.height/2);
 	map.draw();
+    solver.draw();
 	player.draw();
 	ctx.restore();
 

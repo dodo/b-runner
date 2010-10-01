@@ -8,7 +8,7 @@ var Map = function() {
 		[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-		[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+		[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[ 1, 0, 0, 0, 0, 0, 3, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[ 1, 0, 0, 0, 0, 6, 6, 6, 6, 6, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
 		[ 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 7, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -43,8 +43,20 @@ var tiles = [undefined,
 	[vec(0, 0), vec(TILE_SIZE/2, 0), vec(TILE_SIZE, TILE_SIZE), vec(0, TILE_SIZE)],
 
 ];
-
-
+var buildConstraints = function () {
+return new ConstraintSolver([
+    (new Block({x:12*TILE_SIZE, y:5*TILE_SIZE, fixed:true}, {x:12*TILE_SIZE, y:6*TILE_SIZE, fixed:true}, {x:13*TILE_SIZE, y:5*TILE_SIZE}, {x:13*TILE_SIZE, y:6*TILE_SIZE}))
+    .connect({x:13*TILE_SIZE, y:5*TILE_SIZE}, {x:13*TILE_SIZE, y:6*TILE_SIZE}, {x:14*TILE_SIZE, y:5*TILE_SIZE}, {x:14*TILE_SIZE, y:6*TILE_SIZE})
+    .connect({x:14*TILE_SIZE, y:5*TILE_SIZE}, {x:14*TILE_SIZE, y:6*TILE_SIZE}, {x:15*TILE_SIZE, y:5*TILE_SIZE}, {x:15*TILE_SIZE, y:6*TILE_SIZE})
+    .connect({x:15*TILE_SIZE, y:5*TILE_SIZE}, {x:15*TILE_SIZE, y:6*TILE_SIZE}, {x:16*TILE_SIZE, y:5*TILE_SIZE}, {x:16*TILE_SIZE, y:6*TILE_SIZE})
+    .connect({x:16*TILE_SIZE, y:5*TILE_SIZE}, {x:16*TILE_SIZE, y:6*TILE_SIZE}, {x:17*TILE_SIZE, y:5*TILE_SIZE}, {x:17*TILE_SIZE, y:6*TILE_SIZE})
+    .connect({x:17*TILE_SIZE, y:5*TILE_SIZE}, {x:17*TILE_SIZE, y:6*TILE_SIZE}, {x:18*TILE_SIZE, y:5*TILE_SIZE, fixed:true}, {x:18*TILE_SIZE, y:6*TILE_SIZE, fixed:true}),
+    (new Block({x:28*TILE_SIZE, y:4*TILE_SIZE, fixed:true}, {x:28*TILE_SIZE, y:5*TILE_SIZE, fixed:true}, {x:29*TILE_SIZE, y:4*TILE_SIZE}, {x:29*TILE_SIZE, y:5*TILE_SIZE}, 100))
+    .connect({x:29*TILE_SIZE, y:4*TILE_SIZE}, {x:29*TILE_SIZE, y:5*TILE_SIZE}, {x:30*TILE_SIZE, y:4*TILE_SIZE}, {x:30*TILE_SIZE, y:5*TILE_SIZE})
+    .connect({x:30*TILE_SIZE, y:4*TILE_SIZE}, {x:30*TILE_SIZE, y:5*TILE_SIZE}, {x:31*TILE_SIZE, y:4*TILE_SIZE}, {x:31*TILE_SIZE, y:5*TILE_SIZE})
+    .connect({x:31*TILE_SIZE, y:4*TILE_SIZE}, {x:31*TILE_SIZE, y:5*TILE_SIZE}, {x:32*TILE_SIZE, y:4*TILE_SIZE}, {x:32*TILE_SIZE, y:5*TILE_SIZE}),
+]);
+};
 /*
  * returns an object containing the shortest distance betwixt given point and polygon.
  * also returns the corresponding normal vector and possible collision point.
@@ -103,7 +115,7 @@ var circleCollision = function(circle, m) {
 }
 */
 
-Map.prototype.collision = function(player) {
+Map.prototype.collision = function(player, solver) {
 
 	var col = { d: 9e9 };
 
@@ -129,6 +141,8 @@ Map.prototype.collision = function(player) {
 		}
 	}
 
+    var c = solver.collisionCheck(player);
+    if(c.d < col.d) col = c;
 
 	// apply corrections
 	if(col.d < player.radius) {
