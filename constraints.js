@@ -5,17 +5,22 @@ var Point = function (x, y, fixed) {
     this.fixed = fixed || false;
     this.pos = vec(x,y);
     this.acc = vec();
+    this.force = vec();
     this._prev = vec(x,y);
 };
 
 Point.prototype.simulate = function (delta) {
     if (!this.fixed) {
-        this.acc = this.acc.mul(delta*delta);
-        var pos = this.pos.mul(2).sub(this._prev).add(this.acc);
+        this.acc = this.acc.add(this.force).mul(delta*delta);
+        var pos = this.pos.sub(this._prev).add(this.acc).mul(0.9).add(this.pos);
         this._prev = this.pos;
         this.pos = pos;
         this.acc = vec();
     }
+};
+
+Point.prototype.hit =  function (v) {
+    if (!this.fixed) this.force = this.force.add(v);
 };
 
 Point.prototype.accelerate =  function (v) {
@@ -26,6 +31,9 @@ Point.prototype.correct =  function (v) {
     if (!this.fixed) this.pos = this.pos.add(v);
 };
 
+Point.prototype.clearForces =  function () {
+    this.force = vec();
+};
 
 
 var Constraint = function (p1, p2, stiffness) {
@@ -84,6 +92,7 @@ Segment.prototype.draw = function () {
         ctx.lineTo(p2.pos.x, p2.pos.y);
         ctx.stroke();
     } */
+    ctx.lineWidth = 0.6;
     ctx.fillStyle = "#777";
     ctx.strokeStyle = "#777";
     ctx.beginPath();
@@ -99,7 +108,16 @@ Segment.prototype.draw = function () {
 Segment.prototype.collisionCheck = function (player) {
     var poly = [];
     for(var i=0; i<4; i++) poly.push(this.points[i].pos);
-    return polygonCollision(poly, player.pos);
+    var col = polygonCollision(poly, player.pos);
+    if(col.d <= player.radius) {
+        var r = player.radius;
+        var force = vec(0, player.mass);
+        var p1 = (Math.min(this.points[0].pos.x, this.points[2].pos.x) == this.points[0].pos.x) ? this.points[0] : this.points[2];
+        var p2 = (Math.min(this.points[1].pos.x, this.points[3].pos.x) == this.points[1].pos.x) ? this.points[1] : this.points[3];
+        p1.hit(force.mul(r / p1.pos.sub(player.pos).len()));
+        p2.hit(force.mul(r / p2.pos.sub(player.pos).len()));
+    }
+    return col;
 };
 
 
@@ -213,6 +231,7 @@ ConstraintSolver.prototype.update = function (steps) {
             var point = this.points[i];
             point.accelerate(gravity);
             point.simulate(delta);
+            if (j == steps-1) point.clearForces();
         }
     }
     for(var i=0, il=this.blocks.length; i<il; i++) {
