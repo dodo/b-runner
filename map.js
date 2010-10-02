@@ -55,6 +55,11 @@ return new ConstraintSolver([
     .connect({x:29*TILE_SIZE, y:4*TILE_SIZE}, {x:29*TILE_SIZE, y:5*TILE_SIZE}, {x:30*TILE_SIZE, y:4*TILE_SIZE}, {x:30*TILE_SIZE, y:5*TILE_SIZE})
     .connect({x:30*TILE_SIZE, y:4*TILE_SIZE}, {x:30*TILE_SIZE, y:5*TILE_SIZE}, {x:31*TILE_SIZE, y:4*TILE_SIZE}, {x:31*TILE_SIZE, y:5*TILE_SIZE})
     .connect({x:31*TILE_SIZE, y:4*TILE_SIZE}, {x:31*TILE_SIZE, y:5*TILE_SIZE}, {x:32*TILE_SIZE, y:4*TILE_SIZE}, {x:32*TILE_SIZE, y:5*TILE_SIZE}),
+    (new Block({x:32*TILE_SIZE, y:14*TILE_SIZE, fixed:true},{x:33*TILE_SIZE, y:14*TILE_SIZE, fixed:true},{x:32*TILE_SIZE, y:13*TILE_SIZE},{x:33*TILE_SIZE, y:13*TILE_SIZE}, 2))
+    .connect({x:32*TILE_SIZE, y:13*TILE_SIZE},{x:33*TILE_SIZE, y:13*TILE_SIZE},{x:32*TILE_SIZE, y:12*TILE_SIZE},{x:33*TILE_SIZE, y:12*TILE_SIZE})
+    .connect({x:32*TILE_SIZE, y:12*TILE_SIZE},{x:33*TILE_SIZE, y:12*TILE_SIZE},{x:32*TILE_SIZE, y:11*TILE_SIZE},{x:33*TILE_SIZE, y:11*TILE_SIZE})
+    .connect({x:32*TILE_SIZE, y:11*TILE_SIZE},{x:33*TILE_SIZE, y:11*TILE_SIZE},{x:32*TILE_SIZE, y:10*TILE_SIZE},{x:33*TILE_SIZE, y:10*TILE_SIZE})
+    .connect({x:32*TILE_SIZE, y:10*TILE_SIZE},{x:33*TILE_SIZE, y:10*TILE_SIZE},{x:32*TILE_SIZE, y:9*TILE_SIZE},{x:33*TILE_SIZE, y:9*TILE_SIZE}),
 ]);
 };
 /*
@@ -85,9 +90,9 @@ var polygonCollision = function(poly, m) {
 		else { // line
 			p = a.add(ab.mul(q));
 			n = ab.perp().normalize();
-			d = n.dot(am);
+			d = Math.abs(n.dot(am));
 		}
-		if(Math.abs(d) < Math.abs(col.d)) {
+		if(d < col.d) {
 			col.d = d;
 			col.n = n;
 			col.p = p;

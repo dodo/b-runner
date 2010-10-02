@@ -5,7 +5,7 @@ var Player = function() {
 	this.pos = vec(300, 400);
 	this.vel = vec(0, 0);
 	this.radius = 21;
-    this.mass = 10;
+    this.mass = 1;
 
 	this.normal = vec(0, -1);
 	this.collision = false;

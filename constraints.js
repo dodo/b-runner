@@ -70,28 +70,20 @@ Constraint.prototype.draw = function () {
 
 
 var Segment = function (points) {
-    this.points = points;
-    for(var i=0; i<4; i++) {
-        var c = this.points[i].pos.cross(this.points[(i+2)%4].pos);
-        if(c > 0) {
-            var dummy = this.points[(i+1)%4];
-            this.points[(i+1)%4] = this.points[(i+2)%4];
-            this.points[(i+2)%4] = dummy;
+    this.points = points.slice(0,4);
+    for(var i=0; i<8; i++) {
+        var a = i%4, b = (i+1)%4, c = (i+2)%4;
+        var ab = this.points[b].pos.sub(this.points[a].pos);
+        var ac = this.points[c].pos.sub(this.points[a].pos);
+        if(ab.dot(ac) != 0) {
+            var dummy = this.points[b];
+            this.points[b] = this.points[c];
+            this.points[c] = dummy;
         }
     }
 };
 
 Segment.prototype.draw = function () {
-    /* debug
-    ctx.strokeStyle = "blue";
-    for(var i=0; i<4; i++) {
-        var p1 = this.points[i];
-        var p2 = this.points[(i+1)%4];
-        ctx.beginPath();
-        ctx.moveTo(p1.pos.x, p1.pos.y);
-        ctx.lineTo(p2.pos.x, p2.pos.y);
-        ctx.stroke();
-    } */
     ctx.lineWidth = 0.6;
     ctx.fillStyle = "#777";
     ctx.strokeStyle = "#777";
@@ -103,19 +95,30 @@ Segment.prototype.draw = function () {
     }
     ctx.fill();
     ctx.stroke();
+    /* debug
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "blue";
+    ctx.beginPath();
+    ctx.moveTo(this.points[3].pos.x, this.points[3].pos.y);
+    for(var i=0; i<4; i++) {
+        var p = this.points[i];
+        ctx.lineTo(p.pos.x, p.pos.y);
+    }
+    ctx.stroke(); */
+    ctx.lineWidth = 1;
 };
 
 Segment.prototype.collisionCheck = function (player) {
     var poly = [];
-    for(var i=0; i<4; i++) poly.push(this.points[i].pos);
+    for(var i=3; i>=0; i--) poly.push(this.points[i].pos);
     var col = polygonCollision(poly, player.pos);
     if(col.d <= player.radius) {
+        var m = player.mass;
         var r = player.radius;
-        var force = vec(0, player.mass);
-        var p1 = (Math.min(this.points[0].pos.x, this.points[2].pos.x) == this.points[0].pos.x) ? this.points[0] : this.points[2];
-        var p2 = (Math.min(this.points[1].pos.x, this.points[3].pos.x) == this.points[1].pos.x) ? this.points[1] : this.points[3];
-        p1.hit(force.mul(r / p1.pos.sub(player.pos).len()));
-        p2.hit(force.mul(r / p2.pos.sub(player.pos).len()));
+        var points = [];
+        for(var i=0; i<4;i++) points.push({p:this.points[i],d:this.points[i].pos.sub(player.pos)});
+        points.sort(function (a,b) {return a.d.lenSq() - b.d.lenSq();});
+        for(var i=0; i<2;i++) points[i].p.hit(points[i].d.normalize().mul(m*r/points[i].d.len()));
     }
     return col;
 };
@@ -144,10 +147,10 @@ var Block = function (p1, p2, p3, p4, stiffness) {
 };
 
 Block.prototype.connect = function (p1, p2, p3, p4) {
-    var points = [p1, p2, p3, p4];
+    var points = [null, null, null, null];
     var isnew = [true, true, true, true];
     for(var i=0; i<4; i++) {
-        var p = points[i];
+        var p = [p1, p2, p3, p4][i];
         var found = false;
         for(var n=0, nl=this.points.length; n<nl; n++) {
             var point = this.points[n];
