@@ -74,8 +74,8 @@ var polygonCollision = function(poly, m) {
 	var i;
 	for(i = 0; i < len; ++i) {
 		b = poly[i];
-		var ab = b.sub(a);
-		var am = m.sub(a);
+		var ab = b.dup().sub(a);
+		var am = m.dup().sub(a);
 		var p = null;
 		var d;
 		var n;
@@ -83,19 +83,19 @@ var polygonCollision = function(poly, m) {
 		if(q < 0) p = a;
 		else if(q > 1) p = b;
 		if(p) { // vertex
-			n = m.sub(p);
+			n = m.dup().sub(p);
 			d = n.len();
-			n.normalize();
+			n.norm();
 		}
 		else { // line
-			p = a.add(ab.mul(q));
-			n = ab.perp().normalize();
+			p = ab.dup().mul(q).add(a);
+			n = ab.dup().perp().norm();
 			d = Math.abs(n.dot(am));
 		}
 		if(d < col.d) {
 			col.d = d;
 			col.n = n;
-			col.p = p;
+			col.p = p.dup();
 		}
 		a = b;
 	}
@@ -135,13 +135,13 @@ Map.prototype.collision = function(player, solver) {
 			var poly = tiles[row[x]];
 			if(!poly) continue;
 
-			var offset = vec(x * TILE_SIZE, y * TILE_SIZE);
-			var w = player.pos.sub(offset);
+			var offset = vec(x, y).mul(TILE_SIZE);
+			var w = player.pos.dup().sub(offset);
 
 			var c = polygonCollision(poly, w);
 			if(c.d < col.d) {
 				col = c;
-				col.p = col.p.add(offset);
+				col.p.add(offset);
 			}
 		}
 	}
@@ -152,13 +152,12 @@ Map.prototype.collision = function(player, solver) {
 	// apply corrections
 	if(col.d < player.radius) {
 		// position correction
-		var k = col.n.mul(col.d - player.radius);
-		player.pos.subEq(k);
+		player.pos.sub(col.n.dup().mul(col.d - player.radius));
 		// velocity correction
-		var pn = col.n.perp();
-		player.vel = pn.mul(player.vel.dot(pn));
+		var pn = col.n.dup().perp();
+		player.vel.copy(pn.dup().mul(player.vel.dot(pn)));
 
-		player.normal = col.n;
+		player.normal.copy(col.n);
 		player.collision = true;
 	}
 	else {
@@ -181,11 +180,12 @@ Map.prototype.draw = function() {
 			var poly = tiles[this.data[y][x]];
 			if(poly === undefined) continue;
 
+            var p = vec(x, y).mul(TILE_SIZE);
 			var v = poly[0];
-			ctx.moveTo(v.x + x * TILE_SIZE, v.y + y * TILE_SIZE);
+			ctx.moveTo.apply(ctx, v.dup().add(p).toList());
 			for(var i = poly.length - 1; i >= 1; --i) {
 				v = poly[i];
-				ctx.lineTo(v.x + x * TILE_SIZE, v.y + y * TILE_SIZE);
+				ctx.lineTo.apply(ctx, v.dup().add(p).toList());
 			}
 			ctx.closePath();
 

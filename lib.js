@@ -68,14 +68,16 @@ var loop = function() {
 	// update game state
 	player.update();
     solver.update();
+//     solver.collision(map);
 	map.collision(player, solver);
 	updateCamera();
 
 
 	// render
 	ctx.save();
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.translate(-camera.x + canvas.width/2, -camera.y + canvas.height/2);
+    var size = vec(canvas.width,canvas.height);
+	ctx.clearRect.apply(ctx, [0,0].concat(size.toList()));
+	ctx.translate.apply(ctx, size.mul(0.5).sub(camera).toList());
 	map.draw();
     solver.draw();
 	player.draw();

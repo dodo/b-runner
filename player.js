@@ -5,7 +5,7 @@ var Player = function() {
 	this.pos = vec(300, 400);
 	this.vel = vec(0, 0);
 	this.radius = 21;
-    this.mass = 1;
+    this.mass = 10;
 
 	this.normal = vec(0, -1);
 	this.collision = false;
@@ -39,7 +39,7 @@ Player.prototype.applyFriction = function() {
 		friction = FRICTION_AIR;
 	}
 	else {
-		var perp = this.normal.perp();
+		var perp = this.normal.dup().perp();
 		local_dx = -perp.dot(this.vel);
 		friction = FRICTION_GROUND;
 	}
@@ -56,29 +56,27 @@ Player.prototype.applyFriction = function() {
 	}
 
 	if(this.inAir) this.vel.x = local_dx;
-	else {
-		this.vel = this.normal.mul(this.normal.dot(this.vel));
-		this.vel.subEq(perp.mul(local_dx));
-	}
+	else
+		this.vel.copy(this.normal.dup().mul(this.normal.dot(this.vel))).sub(perp.mul(local_dx));
 
 };
 
 Player.prototype.update = function() {
 
 	var t = keys[39] - keys[37];
-	var perp = this.normal.perp();
+	var perp = this.normal.dup().perp();
 
 	if(this.collision && this.normal.y < -0.6) {
 		this.inAir = false;
 
 		// friction
 		this.applyFriction(FRICTION_GROUND);
-		this.vel.subEq(perp.mul(t * FRICTION_GROUND * 2));
+		this.vel.sub(perp.dup().mul(t * FRICTION_GROUND * 2));
 
 		// initialize jump
 		if(keys[88] && !this.lastJump) {
 			this.jumpState = 15;
-			this.vel.subEq(this.normal.mul(GRAVITY * -12));
+			this.vel.sub(this.normal.dup().mul(GRAVITY * -12));
 
 			h = this.pos.y;
 			hx = 0;
@@ -112,13 +110,11 @@ Player.prototype.update = function() {
 	this.vel.y += GRAVITY;
 
 	// limit speed
-	if(this.vel.lenSq() > MAX_SPEED * MAX_SPEED) {
-		this.vel.normalize();
-		this.vel.mulEq(MAX_SPEED);
-	}
+	if(this.vel.lenSq() > MAX_SPEED * MAX_SPEED)
+		this.vel.norm().mul(MAX_SPEED);
 
 	// apply velocity
-	this.pos.addEq(this.vel);
+	this.pos.add(this.vel);
 
 	// sprite direction
 	if(this.vel.x > 0.000001) this.dir = 1;
@@ -137,14 +133,11 @@ Player.prototype.draw = function() {
 */
 
 	this.sprite.nextFrame();
-	if(this.inAir) {
-		this.normal.x = 0;
-		this.normal.y = -1;
-	}
+	if(this.inAir) this.normal.set(0, -1);
 
 	ctx.save();
 //	ctx.transform(-this.normal.y, this.normal.x, -this.normal.x, -this.normal.y, this.pos.x, this.pos.y);
-	ctx.translate(this.pos.x, this.pos.y);
+	ctx.translate.apply(ctx, this.pos.toList());
 	this.sprite.draw(this.dir < 0);
 	ctx.restore();
 

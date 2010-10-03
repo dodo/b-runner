@@ -11,44 +11,43 @@ var Point = function (x, y, fixed) {
 
 Point.prototype.simulate = function (delta) {
     if (!this.fixed) {
-        this.acc = this.acc.add(this.force).mul(delta*delta);
-        var pos = this.pos.sub(this._prev).add(this.acc).mul(0.9).add(this.pos);
-        this._prev = this.pos;
-        this.pos = pos;
-        this.acc = vec();
+        this.acc.add(this.force).mul(delta*delta);
+        var prev = this._prev;
+        this._prev = this.pos.dup();
+        this.pos.sub(prev).add(this.acc).mul(0.9).add(this._prev);
+        this.acc.zero();
     }
 };
 
 Point.prototype.hit =  function (v) {
-    if (!this.fixed) this.force = this.force.add(v);
+    if (!this.fixed) this.force.add(v);
 };
 
 Point.prototype.accelerate =  function (v) {
-    if (!this.fixed) this.acc = this.acc.add(v);
+    if (!this.fixed) this.acc.add(v);
 };
 
 Point.prototype.correct =  function (v) {
-    if (!this.fixed) this.pos = this.pos.add(v);
+    if (!this.fixed) this.pos.add(v);
 };
 
 Point.prototype.clearForces =  function () {
-    this.force = vec();
+    this.force.zero();
 };
 
 
 var Constraint = function (p1, p2, stiffness) {
     this.p1 = p1;
     this.p2 = p2;
-    this.target = p1.pos.sub(p2.pos).len();
+    this.target = p1.pos.dup().sub(p2.pos).len();
     this.stiffness = stiffness || 4;
 };
 
 Constraint.prototype.resolve = function () {
     var pos1 = this.p1.pos;
     var pos2 = this.p2.pos;
-    var force = (this.target - pos1.sub(pos2).len()) * this.stiffness;
-    var dir = pos1.sub(pos2).normalize();
-    var acc = dir.mul(force);
+    var force = (this.target - pos1.dup().sub(pos2).len()) * this.stiffness;
+    var acc = pos1.dup().sub(pos2).norm().mul(force);
     this.p1.accelerate(acc);
     this.p2.accelerate(acc.mul(-1));
 };
@@ -56,14 +55,14 @@ Constraint.prototype.resolve = function () {
 Constraint.prototype.draw = function () {
     var pos1 = this.p1.pos;
     var pos2 = this.p2.pos;
-    var deviation = this.target - pos1.sub(pos2).len();
+    var deviation = this.target - pos1.dup().sub(pos2).len();
     var color_diff = Math.round(deviation * deviation * 512);
 
-    ctx.strokeStyle = 'rgba(' + (128+color_diff) + ', ' + (128-color_diff) + ', ' + (128-color_diff) + ', 1)';
+    ctx.strokeStyle = "rgb(" + [128+color_diff, 128-color_diff, 128-color_diff].join(", ") + ")";
 
     ctx.beginPath();
-    ctx.moveTo(pos1.x, pos1.y);
-    ctx.lineTo(pos2.x, pos2.y);
+    ctx.moveTo.apply(ctx, pos1.toList());
+    ctx.lineTo.apply(ctx, pos2.toList());
     ctx.stroke();
 };
 
@@ -73,8 +72,8 @@ var Segment = function (points) {
     this.points = points.slice(0,4);
     for(var i=0; i<8; i++) {
         var a = i%4, b = (i+1)%4, c = (i+2)%4;
-        var ab = this.points[b].pos.sub(this.points[a].pos);
-        var ac = this.points[c].pos.sub(this.points[a].pos);
+        var ab = this.points[b].pos.dup().sub(this.points[a].pos);
+        var ac = this.points[c].pos.dup().sub(this.points[a].pos);
         if(ab.dot(ac) != 0) {
             var dummy = this.points[b];
             this.points[b] = this.points[c];
@@ -85,25 +84,20 @@ var Segment = function (points) {
 
 Segment.prototype.draw = function () {
     ctx.lineWidth = 0.6;
-    ctx.fillStyle = "#777";
-    ctx.strokeStyle = "#777";
+    ctx.strokeStyle = ctx.fillStyle = "#777";
     ctx.beginPath();
-    ctx.moveTo(this.points[3].pos.x, this.points[3].pos.y);
-    for(var i=0; i<4; i++) {
-        var p = this.points[i];
-        ctx.lineTo(p.pos.x, p.pos.y);
-    }
+    ctx.moveTo.apply(ctx, this.points[3].pos.toList());
+    for(var i=0; i<4; i++)
+        ctx.lineTo.apply(ctx, this.points[i].pos.toList());
     ctx.fill();
     ctx.stroke();
     /* debug
     ctx.lineWidth = 2;
     ctx.strokeStyle = "blue";
     ctx.beginPath();
-    ctx.moveTo(this.points[3].pos.x, this.points[3].pos.y);
-    for(var i=0; i<4; i++) {
-        var p = this.points[i];
-        ctx.lineTo(p.pos.x, p.pos.y);
-    }
+    ctx.moveTo.apply(ctx, this.points[3].pos.toList());
+    for(var i=0; i<4; i++)
+        ctx.lineTo.apply(ctx, this.points[i].pos.toList());
     ctx.stroke(); */
     ctx.lineWidth = 1;
 };
@@ -116,9 +110,9 @@ Segment.prototype.collisionCheck = function (player) {
         var m = player.mass;
         var r = player.radius;
         var points = [];
-        for(var i=0; i<4;i++) points.push({p:this.points[i],d:this.points[i].pos.sub(player.pos)});
+        for(var i=0; i<4;i++) points.push({p:this.points[i],d:this.points[i].pos.dup().sub(player.pos)});
         points.sort(function (a,b) {return a.d.lenSq() - b.d.lenSq();});
-        for(var i=0; i<2;i++) points[i].p.hit(points[i].d.normalize().mul(m*r/points[i].d.len()));
+        for(var i=0; i<2;i++) points[i].p.hit(points[i].d.dup().norm().mul(m*r/points[i].d.len()));
     }
     return col;
 };

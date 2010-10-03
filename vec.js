@@ -1,88 +1,100 @@
 (function() {
 
-	this.vec = function(x, y) {
-		return new V(x, y);
-	}
+    this.vec = function(x, y) {
+        return new V(x, y);
+    }
 
-	var V = function(x, y) {
-		this.x = x || 0;
-		this.y = y || 0;
-	};
+    var V = function(x, y) {
+        this.x = x || 0;
+        this.y = y || 0;
+    };
+    V.prototype.zero = function() {
+        this.x = 0;
+        this.y = 0;
+        return this;
+    };
 
-	V.prototype.mov = function(o) {
-		this.x = o.x;
-		this.y = o.y;
-	}
+    V.prototype.set = function(x, y) {
+        this.x = x;
+        this.y = y;
+        return this;
+    };
 
-	V.prototype.addEq = function(o) {
-		this.x += o.x;
-		this.y += o.y;
-	}
+    V.prototype.copy = function(o) {
+        this.x = o.x;
+        this.y = o.y;
+        return this;
+    };
 
-	V.prototype.subEq = function(o) {
-		this.x -= o.x;
-		this.y -= o.y;
-	}
+    V.prototype.dup = function() {
+        return new V(this.x, this.y);
+    };
 
-	V.prototype.mulEq = function(f) {
-		this.x *= f;
-		this.y *= f;
-	}
+    V.prototype.equ = function(o) {
+        return this.x == o.x && this.y == o.y;
+    };
 
-	V.prototype.dup = function() {
-		return new V(this.x, this.y);
-	}
+    V.prototype.neg = function() {
+        this.x = -this.x;
+        this.y = -this.y;
+        return this;
+    };
 
-	V.prototype.equ = function(o) {
-		return this.x == o.x && this.y == o.y;
-	}
+    V.prototype.add = function (o) {
+        this.x += o.x;
+        this.y += o.y;
+        return this;
+    };
 
-	V.prototype.neg = function() {
-		return new V(-this.x, -this.y);
-	}
+    V.prototype.sub = function (o) {
+        this.x -= o.x;
+        this.y -= o.y;
+        return this;
+    };
 
-	V.prototype.add = function(o) {
-		return new V(this.x + o.x, this.y + o.y);
-	}
+    V.prototype.mul = function (f) {
+        this.x *= f;
+        this.y *= f;
+        return this;
+    };
 
-	V.prototype.sub = function(o) {
-		return new V(this.x - o.x, this.y - o.y);
-	}
+    V.prototype.dot = function (o) {
+        return this.x * o.x + this.y * o.y;
+    };
 
-	V.prototype.mul = function(f) {
-		return new V(this.x * f, this.y * f);
-	}
+    V.prototype.lenSq = function () {
+        return this.x * this.x + this.y * this.y;
+    };
 
-	V.prototype.dot = function(o) {
-		return this.x * o.x + this.y * o.y;
-	}
+    V.prototype.len = function () {
+        return Math.sqrt(this.lenSq());
+    };
 
-	V.prototype.lenSq = function() {
-		return this.x * this.x + this.y * this.y;
-	}
+    V.prototype.perp = function () {
+        var dummy = this.x;
+        this.x = this.y;
+        this.y = - dummy;
+        return this;
+    };
 
-	V.prototype.len = function() {
-		return Math.sqrt(this.lenSq());
-	}
+    V.prototype.cross = function (o) {
+        return this.y * o.x + (-this.x) * o.y;
+    };
 
-	V.prototype.perp = function() {
-		return new V(this.y, -this.x);
-	}
+    V.prototype.norm = function () {
+        var l = 1 / this.len();
+        this.x *= l;
+        this.y *= l;
+        return this;
+    };
 
-	V.prototype.cross = function(o) {
-		return this.perp().dot(o);
-	}
+    V.prototype.toList = function () {
+        return [this.x, this.y];
+    };
 
-	V.prototype.normalize = function() {
-		var ool = 1 / this.len();
-		this.x *= ool;
-		this.y *= ool;
-		return this;
-	}
-
-	V.prototype.toString = function() {
-		return "vec(" + this.x + "," + this.y + ")";
-	}
+    V.prototype.toString = function () {
+        return "vec(" + this.toList().join(", ") + ")";
+    };
 
 })();
 
